@@ -27,7 +27,7 @@
 | --- | --- | --- | --- |
 | 1 | `539398` | Solution structure, contracts, entities, ERD, seed specification | Compiles and contract tests pass. |
 | 2A | `534432` | EF Core repositories, calculation service, scenario service, tests | Implements the contracts from `main`; tests pass. |
-| 2B | `24542344TK60216` | Views, ViewModels, charts, mock services, ViewModel tests | Compiles against the same contracts and mock tests pass. |
+| 2B | `542344` | Views, ViewModels, charts, mock services, ViewModel tests | Compiles against the same contracts and mock tests pass. |
 | 3 | `539398` | DI wiring, real-service integration, end-to-end smoke tests | Full input-to-dashboard-to-scenario path passes. |
 | 4 | all branches via reviewed fixes | Demo data, errors, README run instructions | Clean build and repeatable local demo. |
 
@@ -124,7 +124,7 @@ public interface IScenarioSimulationService
 
 ### Task 4: Frontend Shell and Mock Data Path
 
-**Owner:** Frontend Developer (`24542344TK60216`)
+**Owner:** Frontend Developer (`542344`)
 
 **Files:**
 - Create: `src/VeloCarbon.Desktop/VeloCarbon.Desktop.csproj`
@@ -147,7 +147,7 @@ public interface IScenarioSimulationService
 
 ### Task 5: Frontend Scenario and Error States
 
-**Owner:** Frontend Developer (`24542344TK60216`)
+**Owner:** Frontend Developer (`542344`)
 
 **Files:**
 - Create: `src/VeloCarbon.Desktop/ViewModels/ScenarioViewModel.cs`

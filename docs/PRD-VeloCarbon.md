@@ -144,7 +144,7 @@ Pengembangan menggunakan tiga branch peran. Pekerjaan backend dan frontend hanya
 | --- | --- | --- | --- |
 | `539398` | Software Architect — Faaid | struktur solution, kontrak DTO/interface, ERD, migration baseline, data contoh, dan pengujian integrasi | Menjadi dasar bagi dua branch lain. |
 | `534432` | Backend Developer — Rafif | EF Core repository, layanan perhitungan, mesin skenario, validasi domain, dan unit test | Menggunakan kontrak domain dari `main`. |
-| `24542344TK60216` | Frontend Developer — Hendra | WPF Views, ViewModels, grafik, validasi antarmuka, dan mock implementation untuk demo tampilan | Menggunakan kontrak domain dari `main`; dapat memakai mock sebelum backend tersedia. |
+| `542344` | Frontend Developer — Hendra | WPF Views, ViewModels, grafik, validasi antarmuka, dan mock implementation untuk demo tampilan | Menggunakan kontrak domain dari `main`; dapat memakai mock sebelum backend tersedia. |
 
 ### Urutan kerja
 
