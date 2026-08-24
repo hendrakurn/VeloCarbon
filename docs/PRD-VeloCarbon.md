@@ -136,7 +136,33 @@ Presentation (WPF Views)
 5. Pengguna membuat skenario; mesin simulasi menerapkan perubahan pada kondisi dasar lalu menghitung selisihnya.
 6. Recommendation service memilih area dengan emisi terbesar dan menyajikan aksi relevan beserta estimasi dampaknya.
 
-## 9. Rencana Rilis
+## 9. Workflow Paralel dan Integrasi
+
+Pengembangan menggunakan tiga branch peran. Pekerjaan backend dan frontend hanya boleh dimulai setelah kontrak data serta struktur arsitektur awal dari Software Architect telah digabungkan ke `main`. Sesudah itu, keduanya berjalan paralel menggunakan kontrak yang sama dan tidak saling menunggu implementasi internal.
+
+| Branch | Pemilik | Luaran paralel | Ketergantungan |
+| --- | --- | --- | --- |
+| `539398` | Software Architect — Faaid | struktur solution, kontrak DTO/interface, ERD, migration baseline, data contoh, dan pengujian integrasi | Menjadi dasar bagi dua branch lain. |
+| `534432` | Backend Developer — Rafif | EF Core repository, layanan perhitungan, mesin skenario, validasi domain, dan unit test | Menggunakan kontrak domain dari `main`. |
+| `24542344TK60216` | Frontend Developer — Hendra | WPF Views, ViewModels, grafik, validasi antarmuka, dan mock implementation untuk demo tampilan | Menggunakan kontrak domain dari `main`; dapat memakai mock sebelum backend tersedia. |
+
+### Urutan kerja
+
+1. **Architecture baseline:** Software Architect membuat kontrak `IEmissionCalculationService`, `IScenarioSimulationService`, DTO aktivitas, DTO ringkasan, serta ERD; kemudian membuat Pull Request ke `main`.
+2. **Pekerjaan paralel:** Setelah baseline digabungkan, backend mengimplementasikan layanan dan penyimpanan data; frontend mengimplementasikan layar serta ViewModel terhadap kontrak yang sama dengan mock data.
+3. **Integrasi pertama:** Backend menyediakan implementasi nyata yang memenuhi kontrak. Frontend mengganti mock melalui dependency injection tanpa mengubah desain layar atau aturan perhitungan.
+4. **Integrasi akhir:** Software Architect menguji alur lengkap: input aktivitas, perhitungan, dashboard, skenario, dan penyimpanan. Ketidaksesuaian kontrak diperbaiki lewat Pull Request kecil yang ditinjau seluruh anggota terkait.
+5. **Stabilisasi demo:** Backend menyiapkan seed data; frontend memastikan state kosong/error dapat ditampilkan; Software Architect menjalankan checklist demo dan dokumentasi.
+
+### Aturan integrasi
+
+- Tidak ada View atau ViewModel yang langsung mengakses DbContext atau API eksternal.
+- Kontrak antarmodul berubah hanya melalui Pull Request yang disetujui Software Architect.
+- Backend menyediakan test unit untuk rumus dan skenario; frontend menyediakan test ViewModel untuk state sukses, validasi, dan error.
+- Data contoh dan factor emisi lokal dipakai untuk demo agar aplikasi tetap berfungsi ketika layanan eksternal tidak tersedia.
+- Pull Request peran hanya digabungkan setelah build dan test yang relevan lulus.
+
+## 10. Rencana Rilis
 
 | Tahap | Luaran |
 | --- | --- |
@@ -145,7 +171,7 @@ Presentation (WPF Views)
 | MVP-3 | Mesin skenario, rekomendasi, grafik tren, dan data contoh untuk demo. |
 | Opsional | Klien BMKG untuk konteks cuaca dan perluasan kategori emisi. |
 
-## 10. Risiko dan Mitigasi
+## 11. Risiko dan Mitigasi
 
 | Risiko | Dampak | Mitigasi |
 | --- | --- | --- |
@@ -155,7 +181,7 @@ Presentation (WPF Views)
 | Data pengguna tidak lengkap | Simulasi tidak bermakna | Gunakan validasi dan sediakan data contoh. |
 | Perhitungan sulit diuji | Regresi logic | Pisahkan domain service dari WPF dan tulis unit test untuk rumus serta skenario. |
 
-## 11. Tanggung Jawab Software Architect
+## 12. Tanggung Jawab Software Architect
 
 1. Menetapkan struktur solution dan dependensi antarproyek/lapisan.
 2. Menetapkan convention MVVM, dependency injection, penamaan, dan error handling.
@@ -165,7 +191,7 @@ Presentation (WPF Views)
 6. Menyiapkan data contoh serta kontrak integrasi agar backend dan frontend dapat dikembangkan paralel.
 7. Memelihara dokumentasi arsitektur, keputusan desain, dan alur Git.
 
-## 12. Definisi Selesai untuk Demo
+## 13. Definisi Selesai untuk Demo
 
 - Aplikasi WPF dapat dibuka dan dipakai dengan data lokal contoh.
 - Pengguna dapat menyimpan setidaknya satu perjalanan dan satu catatan listrik.
