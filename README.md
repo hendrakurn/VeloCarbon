@@ -20,7 +20,7 @@
 | --- | --- | --- | --- |
 | Rafif Raihan Bahrul Alam | 24/534432/TK/59237 | Ketua Kelompok dan Backend Developer* | Koordinasi pekerjaan kelompok, layanan perhitungan emisi, akses data, validasi masukan, dan pengujian logika bisnis. |
 | Faaid Sakhaa | 24/539398/TK/59820 | Software Architect | Arsitektur MVVM, model PBO, skema basis data dan ERD, kontrak antarmodul, standar Git, serta integrasi keseluruhan sistem. |
-| Hendra Kurnia Maliqi | 24542344TK60216 | Frontend Developer* | Antarmuka WPF, visualisasi tren dan hasil simulasi, pengalaman pengguna, serta dokumentasi penggunaan. |
+| Hendra Kurnia Maliqi | 24/542344/TK/60216 | Frontend Developer* | Antarmuka WPF, visualisasi tren dan hasil simulasi, pengalaman pengguna, serta dokumentasi penggunaan. |
 
 \*Pembagian Backend dan Frontend adalah usulan kerja awal dan harus dikonfirmasi anggota terkait sebelum pengembangan dimulai.
 
