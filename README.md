@@ -18,7 +18,7 @@
 
 | Anggota | NIM/NIU | Peran | Tanggung jawab utama |
 | --- | --- | --- | --- |
-|  |  |  |  |
+| Rafif Raihan Bahrul Alam | 24/534432/TK/59237 | Frontend Developer| Antarmuka WPF, visualisasi tren dan hasil simulasi, pengalaman pengguna |
 |  |  |  |  |
 |  |  |  |  |
 
