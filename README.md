@@ -20,7 +20,7 @@
 | --- | --- | --- | --- |
 | Rafif Raihan Bahrul Alam | 24/534432/TK/59237 | Frontend Developer| Antarmuka WPF, visualisasi tren dan hasil simulasi, pengalaman pengguna |
 | Faaid Sakhaa | 24/539398/TK/59820 | Software Architect | Arsitektur MVVM, model PBO, skema basis data dan ERD, kontrak antarmodul, standar Git, serta integrasi keseluruhan sistem. |
-|  |  |  |  |
+| Hendra Kurnia Maliqi | 24/542344/TK/60216 | Backend Developer | eksekusi ERD, develop API, menyusun method method API, integrasi backend frontend |
 
 ## Latar Belakang dan Permasalahan
 
