@@ -22,6 +22,7 @@
 | Faaid Sakhaa | 24/539398/TK/59820 | Software Architect | Arsitektur MVVM, model PBO, skema basis data dan ERD, kontrak antarmodul, standar Git, serta integrasi keseluruhan sistem. |
 | Hendra Kurnia Maliqi | 24/542344/TK/60216 | Backend Developer | eksekusi ERD, develop API, menyusun method method API, integrasi backend frontend |
 
+
 ## Latar Belakang dan Permasalahan
 
 Aktivitas sehari-hari seperti perjalanan menggunakan kendaraan pribadi dan penggunaan listrik menghasilkan emisi gas rumah kaca. Namun, pengguna sering tidak mengetahui sumber emisi terbesarnya maupun dampak dari perubahan kebiasaan sederhana. Informasi emisi tersebar dalam satuan yang sulit dibandingkan—liter bahan bakar, kilometer perjalanan, dan kWh listrik—sehingga pengguna tidak mempunyai dasar yang jelas untuk memilih aksi pengurangan emisi yang paling berdampak.
