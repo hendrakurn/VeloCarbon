@@ -1,0 +1,70 @@
+# .NET build output
+[Bb]in/
+[Oo]bj/
+[Aa]rtifacts/
+[Pp]ublish/
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.csproj.user
+*.pubxml.user
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+
+# Visual Studio Code and local editor state
+.vscode/
+.history/
+.ionide/
+
+# Test and coverage output
+[Tt]est[Rr]esults/
+[Cc]overage/
+coverage.*
+*.coverage
+*.coveragexml
+*.trx
+
+# NuGet artifacts
+packages/
+*.nupkg
+*.snupkg
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+appsettings.Local.json
+secrets.json
+*.pfx
+*.p12
+*.key
+
+# Local database files
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Operating-system files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Local architecture drafts; public GitHub Pages files under docs remain trackable
+/docs/PRD-VeloCarbon.md
+/docs/superpowers/
