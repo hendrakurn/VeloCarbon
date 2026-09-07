@@ -85,6 +85,141 @@ WPF Views <-> ViewModels <-> Application Services <-> Repositories <-> PostgreSQ
 
 Model domain inti: `UserProfile`, `Vehicle`, `VehicleMonthlyInput`, `ActivityRecord`, `MobilityActivity`, `FuelPurchaseActivity`, `ElectricityUsage`, `ApplianceUsage`, `EmissionFactor`, `EmissionCalculation`, `Scenario`, `ScenarioChange`, `ScenarioResult`, dan `Recommendation`.
 
+### Class Diagram
+
+Diagram menampilkan kelas dan atribut yang menentukan kontrak empat metode input. Tabel model di atas melengkapi atribut audit. `<<abstract>>` menunjukkan kelas abstrak; panah segitiga mengarah ke induk, diamond menunjukkan kepemilikan siklus hidup, dan garis putus-putus menunjukkan penggunaan oleh service. Association dapat memiliki navigability; kepala panah association tidak otomatis berarti notasi salah.
+
+```mermaid
+classDiagram
+direction TB
+class UserProfile {
+  +Guid Id
+  +string Name
+}
+class Vehicle {
+  +Guid Id
+  +Guid UserProfileId
+  +FuelType FuelType
+}
+class VehicleMonthlyInput {
+  +Guid Id
+  +Guid VehicleId
+  +DateTime Month
+  +MobilityInputMethod Method
+}
+class ActivityRecord {
+  <<abstract>>
+  +Guid Id
+  +Guid UserProfileId
+  +ActivityUnit Unit
+  +GetActivityValue() decimal
+}
+class MobilityActivity {
+  +Guid? VehicleId
+  +DateTime ActivityDate
+  +TransportMode TransportMode
+  +decimal DistanceKm
+  +int Frequency
+}
+class FuelPurchaseActivity {
+  +Guid VehicleId
+  +DateTime PurchaseDate
+  +FuelType FuelType
+  +decimal LitersPurchased
+  +decimal? TotalCost
+}
+class ElectricityUsage {
+  +ElectricityInputMethod InputMethod
+  +decimal UsageKWh
+  +DateTime PeriodStart
+  +DateTime PeriodEnd
+}
+class ApplianceUsage {
+  +Guid Id
+  +Guid ElectricityUsageId
+  +string Name
+  +decimal PowerWatt
+  +int Quantity
+  +decimal HoursPerDay
+  +int DaysUsed
+  +EstimateKWh() decimal
+}
+class EmissionFactor {
+  +Guid Id
+  +decimal Value
+  +ActivityUnit Unit
+  +string Source
+  +string Version
+}
+class EmissionCalculation {
+  +Guid Id
+  +Guid ActivityRecordId
+  +Guid EmissionFactorId
+  +decimal ActivityValue
+  +decimal ResultKgCO2e
+}
+class Scenario {
+  +Guid Id
+  +Guid UserProfileId
+  +DateTime BaselineStart
+  +DateTime BaselineEnd
+}
+class ScenarioChange {
+  +Guid Id
+  +Guid ScenarioId
+  +ChangeType ChangeType
+  +Guid TargetActivityRecordId
+  +Guid? TargetApplianceUsageId
+  +decimal ChangeValue
+}
+class ScenarioResult {
+  +Guid Id
+  +Guid ScenarioId
+  +decimal BaselineKgCO2e
+  +decimal ScenarioKgCO2e
+  +decimal ReductionKgCO2e
+  +GetReductionPercentage() decimal?
+}
+class Recommendation {
+  +Guid Id
+  +Guid ScenarioResultId
+  +string RecommendedAction
+  +decimal EstimatedReductionKgCO2e
+  +int Priority
+}
+class EmissionCalculatorService {
+  +CalculateActivityEmission(ActivityRecord activity, EmissionFactor factor) EmissionCalculation
+}
+class ScenarioService {
+  +RunScenario(Scenario scenario) ScenarioResult
+  +GenerateRecommendations(ScenarioResult result) List~Recommendation~
+}
+UserProfile "1" -- "0..*" Vehicle
+UserProfile "1" -- "0..*" ActivityRecord
+UserProfile "1" -- "0..*" Scenario
+Vehicle "1" *-- "0..*" VehicleMonthlyInput
+Vehicle "0..1" -- "0..*" MobilityActivity
+Vehicle "1" -- "0..*" FuelPurchaseActivity
+ActivityRecord <|-- MobilityActivity
+ActivityRecord <|-- FuelPurchaseActivity
+ActivityRecord <|-- ElectricityUsage
+ElectricityUsage "1" *-- "0..*" ApplianceUsage
+ActivityRecord "1" -- "0..1" EmissionCalculation
+EmissionFactor "1" -- "0..*" EmissionCalculation
+Scenario "1" *-- "1..*" ScenarioChange
+ActivityRecord "1" -- "0..*" ScenarioChange : targets
+ApplianceUsage "0..1" -- "0..*" ScenarioChange : optional target
+Scenario "1" *-- "0..1" ScenarioResult
+ScenarioResult "1" *-- "0..*" Recommendation
+EmissionCalculatorService ..> ActivityRecord
+EmissionCalculatorService ..> EmissionFactor
+EmissionCalculatorService ..> EmissionCalculation
+ScenarioService ..> Scenario
+ScenarioService ..> ScenarioResult
+ScenarioService ..> Recommendation
+ScenarioService ..> EmissionCalculatorService
+```
+
 ## Referensi Awal
 
 1. Intergovernmental Panel on Climate Change (IPCC), [*2006 IPCC Guidelines for National Greenhouse Gas Inventories*](https://www.ipcc-nggip.iges.or.jp/public/2006gl/) dan pembaruannya.
