@@ -220,6 +220,10 @@ ScenarioService ..> Recommendation
 ScenarioService ..> EmissionCalculatorService
 ```
 
+### ERD dan Skema PostgreSQL
+
+Rancangan basis data, penjelasan relasi, diagram PNG, dan kamus tipe setiap atribut tersedia di [docs/database/erd.md](docs/database/erd.md). Skrip pembuatan tabel ada di [database/schema.sql](database/schema.sql).
+
 ## Referensi Awal
 
 1. Intergovernmental Panel on Climate Change (IPCC), [*2006 IPCC Guidelines for National Greenhouse Gas Inventories*](https://www.ipcc-nggip.iges.or.jp/public/2006gl/) dan pembaruannya.
