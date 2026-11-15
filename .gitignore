@@ -4,6 +4,10 @@
 [Aa]rtifacts/
 [Pp]ublish/
 
+graphify-out/
+.codegraph/
+*.pdf
+
 # Visual Studio
 .vs/
 *.suo
@@ -68,3 +72,14 @@ Desktop.ini
 # Local architecture drafts; public GitHub Pages files under docs remain trackable
 /docs/PRD-VeloCarbon.md
 /docs/superpowers/
+
+# Node / Next.js Prototype
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+docker-compose.yml
+docs/alur-kerja-dan-hasil-akhir.md
+docs/homework8-queries.sql
+docs/homework8/
+docs/panduan-backend-dan-efcore.md
