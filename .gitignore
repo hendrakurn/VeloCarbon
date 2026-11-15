@@ -78,7 +78,7 @@ frontend/node_modules/
 frontend/.next/
 frontend/out/
 
-docker-compose.yml
+
 docs/alur-kerja-dan-hasil-akhir.md
 docs/homework8-queries.sql
 docs/homework8/
