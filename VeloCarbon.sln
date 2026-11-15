@@ -1,0 +1,45 @@
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VeloCarbon.Core", "src\VeloCarbon.Core\VeloCarbon.Core.csproj", "{A1111111-2222-3333-4444-555555555555}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{CD39917B-5351-42E1-B37E-6DCBBF0AEF2E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VeloCarbon.Data", "src\VeloCarbon.Data\VeloCarbon.Data.csproj", "{B33109A2-5B6A-4863-82B3-1EFCD8B2DA75}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VeloCarbon.Demo", "src\VeloCarbon.Demo\VeloCarbon.Demo.csproj", "{79F8535A-7169-4D54-A30A-CF9766C81B03}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{48FCE41D-FEB4-42FA-A9EA-6A197D24C3B4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VeloCarbon.Tests", "tests\VeloCarbon.Tests\VeloCarbon.Tests.csproj", "{BF2417FE-27B2-4B88-BF83-774C42AEBB73}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A1111111-2222-3333-4444-555555555555}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1111111-2222-3333-4444-555555555555}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1111111-2222-3333-4444-555555555555}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1111111-2222-3333-4444-555555555555}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B33109A2-5B6A-4863-82B3-1EFCD8B2DA75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B33109A2-5B6A-4863-82B3-1EFCD8B2DA75}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B33109A2-5B6A-4863-82B3-1EFCD8B2DA75}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B33109A2-5B6A-4863-82B3-1EFCD8B2DA75}.Release|Any CPU.Build.0 = Release|Any CPU
+		{79F8535A-7169-4D54-A30A-CF9766C81B03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79F8535A-7169-4D54-A30A-CF9766C81B03}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79F8535A-7169-4D54-A30A-CF9766C81B03}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79F8535A-7169-4D54-A30A-CF9766C81B03}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BF2417FE-27B2-4B88-BF83-774C42AEBB73}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF2417FE-27B2-4B88-BF83-774C42AEBB73}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF2417FE-27B2-4B88-BF83-774C42AEBB73}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF2417FE-27B2-4B88-BF83-774C42AEBB73}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B33109A2-5B6A-4863-82B3-1EFCD8B2DA75} = {CD39917B-5351-42E1-B37E-6DCBBF0AEF2E}
+		{79F8535A-7169-4D54-A30A-CF9766C81B03} = {CD39917B-5351-42E1-B37E-6DCBBF0AEF2E}
+		{BF2417FE-27B2-4B88-BF83-774C42AEBB73} = {48FCE41D-FEB4-42FA-A9EA-6A197D24C3B4}
+	EndGlobalSection
+EndGlobal
