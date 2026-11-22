@@ -1,0 +1,226 @@
+<Window x:Class="VeloCarbon.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="VeloCarbon - Jejak Karbon Mobilitas &amp; Listrik" Width="1100" Height="740" MinWidth="900" MinHeight="600"
+        WindowStartupLocation="CenterScreen" Background="#FAFAFA">
+    <DockPanel>
+        <!-- Status bar -->
+        <Border DockPanel.Dock="Bottom" Background="White" BorderBrush="#CFD8DC" BorderThickness="0,1,0,0" Padding="12,6">
+            <TextBlock Text="{Binding Shell.StatusText}" TextWrapping="Wrap">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                        <Setter Property="Foreground" Value="{StaticResource Accent}"/>
+                        <Style.Triggers><DataTrigger Binding="{Binding Shell.IsError}" Value="True"><Setter Property="Foreground" Value="{StaticResource ErrorBrush}"/></DataTrigger></Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+        </Border>
+
+        <!-- Header: profil + bulan -->
+        <Border DockPanel.Dock="Top" Background="{StaticResource Accent}" Padding="16,10">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Left" Text="VeloCarbon" FontSize="22" FontWeight="Bold" Foreground="White" Margin="0,0,24,0"/>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <TextBlock Text="Profil:" Foreground="White" Margin="0,0,6,0"/>
+                    <ComboBox Width="190" ItemsSource="{Binding Profiles}" SelectedItem="{Binding Shell.SelectedProfile}" DisplayMemberPath="Name" Margin="0,0,16,0"/>
+                    <TextBlock Text="Bulan:" Foreground="White" Margin="0,0,6,0"/>
+                    <ComboBox Width="150" ItemsSource="{Binding Months}" SelectedItem="{Binding Shell.SelectedMonth}" Margin="0">
+                        <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding StringFormat='{}{0:MMMM yyyy}'}"/></DataTemplate></ComboBox.ItemTemplate>
+                    </ComboBox>
+                </StackPanel>
+                <TextBlock Text="Estimasi edukatif, bukan inventarisasi emisi resmi" Foreground="#C8E6C9" FontSize="11" VerticalAlignment="Bottom"/>
+            </DockPanel>
+        </Border>
+
+        <TabControl Margin="12" Padding="8">
+            <!-- DASHBOARD -->
+            <TabItem Header="Dashboard">
+                <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel Margin="12">
+                    <TextBlock Style="{StaticResource Heading}" Text="Ringkasan bulan terpilih"/>
+                    <Border Background="{StaticResource AccentLight}" Padding="16" Margin="0,0,0,12">
+                        <StackPanel>
+                            <TextBlock Text="Total emisi" Style="{StaticResource Hint}"/>
+                            <TextBlock Text="{Binding Dashboard.TotalText}" FontSize="32" FontWeight="Bold" Foreground="{StaticResource Accent}"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                <TextBlock Text="Sumber terbesar: " Style="{StaticResource Hint}"/>
+                                <TextBlock Text="{Binding Dashboard.TopSource}" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                    <TextBlock Text="Belum ada aktivitas pada bulan ini. Buka tab 'Input Aktivitas' untuk mulai mencatat." Margin="0,0,0,12">
+                        <TextBlock.Style><Style TargetType="TextBlock" BasedOn="{StaticResource Hint}"><Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers><DataTrigger Binding="{Binding Dashboard.IsEmpty}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></TextBlock.Style>
+                    </TextBlock>
+                    <TextBlock Style="{StaticResource Heading}" Text="Kontribusi per kategori"/>
+                    <ItemsControl ItemsSource="{Binding Dashboard.Categories}" Margin="0,0,0,16">
+                        <ItemsControl.ItemTemplate><DataTemplate>
+                            <Grid Margin="0,3"><Grid.ColumnDefinitions><ColumnDefinition Width="230"/><ColumnDefinition Width="340"/><ColumnDefinition Width="140"/><ColumnDefinition Width="70"/></Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding Label}"/>
+                                <Border Grid.Column="1" Height="16" Background="{StaticResource Accent}" HorizontalAlignment="Left" Width="{Binding BarWidth}"/>
+                                <TextBlock Grid.Column="2" Text="{Binding KgText}"/>
+                                <TextBlock Grid.Column="3" Text="{Binding ShareText}" Foreground="{StaticResource Muted}"/>
+                            </Grid></DataTemplate></ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Style="{StaticResource Heading}" Text="Tren 6 bulan terakhir"/>
+                    <ItemsControl ItemsSource="{Binding Dashboard.Trend}">
+                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate><DataTemplate>
+                            <StackPanel Width="120" VerticalAlignment="Bottom" Margin="4,0">
+                                <TextBlock Text="{Binding KgText}" FontSize="11" HorizontalAlignment="Center"/>
+                                <Border Height="{Binding BarHeight}" Background="{StaticResource Accent}" Width="60" Margin="0,2"/>
+                                <TextBlock Text="{Binding Month}" HorizontalAlignment="Center" Foreground="{StaticResource Muted}"/>
+                            </StackPanel></DataTemplate></ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel></ScrollViewer>
+            </TabItem>
+
+            <!-- INPUT AKTIVITAS -->
+            <TabItem Header="Input Aktivitas">
+                <TabControl Margin="8">
+                    <TabItem Header="Perjalanan (jarak)"><StackPanel Margin="16" MaxWidth="480" HorizontalAlignment="Left">
+                        <TextBlock Style="{StaticResource Heading}" Text="Catat perjalanan"/>
+                        <TextBlock Text="Moda"/><ComboBox ItemsSource="{Binding Input.Modes}" SelectedItem="{Binding Input.Mode}"/>
+                        <TextBlock Text="Kendaraan (wajib untuk Car/Motorcycle)"/><ComboBox ItemsSource="{Binding Input.Vehicles}" SelectedItem="{Binding Input.DistanceVehicle}" DisplayMemberPath="Name"/>
+                        <TextBlock Text="Tanggal"/><DatePicker SelectedDate="{Binding Input.DistanceDate}"/>
+                        <TextBlock Text="Jarak per perjalanan satu arah (km)"/><TextBox Text="{Binding Input.DistanceKm}"/>
+                        <TextBlock Text="Frekuensi (jumlah perjalanan pada tanggal itu)"/><TextBox Text="{Binding Input.Frequency}"/>
+                        <Button Content="Simpan perjalanan" Command="{Binding Input.SaveDistanceCommand}" HorizontalAlignment="Left"/>
+                    </StackPanel></TabItem>
+                    <TabItem Header="Bahan bakar (liter)"><StackPanel Margin="16" MaxWidth="480" HorizontalAlignment="Left">
+                        <TextBlock Style="{StaticResource Heading}" Text="Catat pembelian bahan bakar"/>
+                        <TextBlock Text="Kendaraan (jenis BBM mengikuti kendaraan)"/><ComboBox ItemsSource="{Binding Input.Vehicles}" SelectedItem="{Binding Input.FuelVehicle}" DisplayMemberPath="Name"/>
+                        <TextBlock Text="Tanggal pembelian"/><DatePicker SelectedDate="{Binding Input.FuelDate}"/>
+                        <TextBlock Text="Liter dibeli"/><TextBox Text="{Binding Input.Liters}"/>
+                        <TextBlock Text="Total biaya (opsional)"/><TextBox Text="{Binding Input.TotalCost}"/>
+                        <TextBlock Style="{StaticResource Hint}" Text="Catatan: pembelian BBM adalah pendekatan estimasi, bukan BBM yang terbakar pada bulan itu. Satu kendaraan hanya boleh memakai satu metode (jarak ATAU BBM) per bulan." Margin="0,0,0,6"/>
+                        <Button Content="Simpan pembelian" Command="{Binding Input.SaveFuelCommand}" HorizontalAlignment="Left"/>
+                    </StackPanel></TabItem>
+                    <TabItem Header="Listrik (total kWh)"><StackPanel Margin="16" MaxWidth="480" HorizontalAlignment="Left">
+                        <TextBlock Style="{StaticResource Heading}" Text="Catat total kWh meter"/>
+                        <TextBlock Text="Periode: bulan yang dipilih di bagian atas" Style="{StaticResource Hint}" Margin="0,0,0,6"/>
+                        <TextBlock Text="Total pemakaian (kWh)"/><TextBox Text="{Binding Input.Kwh}"/>
+                        <Button Content="Simpan listrik" Command="{Binding Input.SaveMeterCommand}" HorizontalAlignment="Left"/>
+                    </StackPanel></TabItem>
+                    <TabItem Header="Listrik (estimasi alat)"><DockPanel Margin="16">
+                        <TextBlock DockPanel.Dock="Top" Style="{StaticResource Heading}" Text="Estimasi listrik dari alat elektronik"/>
+                        <TextBlock DockPanel.Dock="Top" Style="{StaticResource Hint}" Margin="0,0,0,6"
+                                   Text="Klik sel untuk mengisi. kWh = watt / 1000 × jumlah × jam per hari × hari pakai. Mengasumsikan daya rata-rata tetap; hasil dapat berbeda dari meter."/>
+                        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal">
+                            <Button Content="+ Tambah alat" Command="{Binding Input.AddApplianceCommand}" Style="{StaticResource SecondaryButton}"/>
+                            <Button Content="Hapus alat terpilih" Command="{Binding Input.RemoveApplianceCommand}" Style="{StaticResource SecondaryButton}"/>
+                            <Button Content="Simpan listrik (alat)" Command="{Binding Input.SaveAppliancesCommand}"/>
+                        </StackPanel>
+                        <DataGrid ItemsSource="{Binding Input.Appliances}" SelectedItem="{Binding Input.SelectedAppliance}" IsReadOnly="False" CanUserAddRows="False">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Nama alat" Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Width="2*"/>
+                                <DataGridTextColumn Header="Daya (watt)" Binding="{Binding PowerWatt, UpdateSourceTrigger=PropertyChanged}" Width="*"/>
+                                <DataGridTextColumn Header="Jumlah" Binding="{Binding Quantity, UpdateSourceTrigger=PropertyChanged}" Width="*"/>
+                                <DataGridTextColumn Header="Jam / hari" Binding="{Binding HoursPerDay, UpdateSourceTrigger=PropertyChanged}" Width="*"/>
+                                <DataGridTextColumn Header="Hari pakai" Binding="{Binding DaysUsed, UpdateSourceTrigger=PropertyChanged}" Width="*"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </DockPanel></TabItem>
+                </TabControl>
+            </TabItem>
+
+            <!-- RIWAYAT -->
+            <TabItem Header="Riwayat">
+                <DockPanel Margin="12">
+                    <TextBlock DockPanel.Dock="Top" Style="{StaticResource Heading}" Text="Aktivitas bulan terpilih"/>
+                    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal">
+                        <Button Content="Hapus terpilih" Command="{Binding History.DeleteCommand}" Background="{StaticResource ErrorBrush}"/>
+                        <TextBlock Style="{StaticResource Hint}" Text="Untuk mengganti metode input (mis. jarak → BBM), hapus catatan lama agar tidak terhitung ganda." VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <DataGrid ItemsSource="{Binding History.Rows}" SelectedItem="{Binding History.Selected}" SelectionMode="Single">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Tanggal" Binding="{Binding Date}" Width="110"/>
+                            <DataGridTextColumn Header="Aktivitas" Binding="{Binding Label}" Width="2*"/>
+                            <DataGridTextColumn Header="Nilai" Binding="{Binding Value}" Width="*"/>
+                            <DataGridTextColumn Header="Emisi" Binding="{Binding Kg}" Width="*"/>
+                            <DataGridTextColumn Header="Faktor (versi, nilai)" Binding="{Binding Source}" Width="1.5*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </TabItem>
+
+            <!-- SIMULASI -->
+            <TabItem Header="Simulasi">
+                <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel Margin="12">
+                    <TextBlock Style="{StaticResource Heading}" Text="Simulasi perubahan kebiasaan"/>
+                    <TextBlock Style="{StaticResource Hint}" Margin="0,0,0,8" Text="Pilih target, tentukan persentase pengurangan, tambahkan ke skenario, lalu jalankan. Simulasi tidak mengubah data aktivitas asli."/>
+                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="110"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <ComboBox ItemsSource="{Binding Simulation.Targets}" SelectedItem="{Binding Simulation.SelectedTarget}" DisplayMemberPath="Display"/>
+                        <TextBox Grid.Column="1" Text="{Binding Simulation.Percent}" Margin="8,2,0,6" ToolTip="Persentase pengurangan"/>
+                        <Button Grid.Column="2" Content="+ Tambah perubahan (%)" Command="{Binding Simulation.AddChangeCommand}" Margin="8,4,0,4"/>
+                    </Grid>
+                    <ListBox ItemsSource="{Binding Simulation.Changes}" SelectedItem="{Binding Simulation.SelectedChange}" DisplayMemberPath="Display" MinHeight="70" MaxHeight="140" Margin="0,0,0,6"/>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Nama skenario: "/><TextBox Text="{Binding Simulation.ScenarioName}" Width="220" Margin="0,2,12,6"/>
+                        <Button Content="Hapus perubahan terpilih" Command="{Binding Simulation.RemoveChangeCommand}" Style="{StaticResource SecondaryButton}"/>
+                        <Button Content="Jalankan simulasi" Command="{Binding Simulation.RunCommand}"/>
+                    </StackPanel>
+                    <Border Background="{StaticResource AccentLight}" Padding="12" Margin="0,8,0,8">
+                        <Border.Style><Style TargetType="Border"><Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers><DataTrigger Binding="{Binding Simulation.HasResult}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></Border.Style>
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal"><TextBlock Text="Kondisi awal: " Width="130"/><TextBlock Text="{Binding Simulation.BaselineText}" FontWeight="SemiBold"/></StackPanel>
+                            <StackPanel Orientation="Horizontal"><TextBlock Text="Dengan skenario: " Width="130"/><TextBlock Text="{Binding Simulation.ScenarioText}" FontWeight="SemiBold"/></StackPanel>
+                            <StackPanel Orientation="Horizontal"><TextBlock Text="Pengurangan: " Width="130"/><TextBlock Text="{Binding Simulation.ReductionText}" FontWeight="Bold" Foreground="{StaticResource Accent}"/><TextBlock Text=" ("/><TextBlock Text="{Binding Simulation.PercentText}"/><TextBlock Text=")"/></StackPanel>
+                        </StackPanel>
+                    </Border>
+                    <TextBlock Style="{StaticResource Heading}" Text="Rekomendasi (urut dampak)"/>
+                    <DataGrid ItemsSource="{Binding Simulation.Recommendations}" MaxHeight="170" Margin="0,0,0,12">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="#" Binding="{Binding Priority}" Width="40"/>
+                            <DataGridTextColumn Header="Target" Binding="{Binding Title}" Width="1.5*"/>
+                            <DataGridTextColumn Header="Aksi yang disarankan" Binding="{Binding Action}" Width="3*"/>
+                            <DataGridTextColumn Header="Estimasi pengurangan" Binding="{Binding Reduction}" Width="1.2*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <TextBlock Style="{StaticResource Heading}" Text="Skenario tersimpan"/>
+                    <DataGrid ItemsSource="{Binding Simulation.Past}" MaxHeight="170">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Nama" Binding="{Binding Name}" Width="2*"/>
+                            <DataGridTextColumn Header="Bulan" Binding="{Binding Month}" Width="*"/>
+                            <DataGridTextColumn Header="Awal" Binding="{Binding Baseline}" Width="*"/>
+                            <DataGridTextColumn Header="Skenario" Binding="{Binding ScenarioValue}" Width="*"/>
+                            <DataGridTextColumn Header="Pengurangan" Binding="{Binding Reduction}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel></ScrollViewer>
+            </TabItem>
+
+            <!-- FAKTOR EMISI -->
+            <TabItem Header="Faktor Emisi">
+                <DockPanel Margin="12">
+                    <TextBlock DockPanel.Dock="Top" Style="{StaticResource Heading}" Text="Faktor emisi yang dipakai (dapat ditelusuri: sumber, satuan, versi)"/>
+                    <DataGrid ItemsSource="{Binding Factors.Rows}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Kategori" Binding="{Binding Category}" Width="90"/>
+                            <DataGridTextColumn Header="Sub" Binding="{Binding Subcategory}" Width="100"/>
+                            <DataGridTextColumn Header="Nilai" Binding="{Binding Value}" Width="70"/>
+                            <DataGridTextColumn Header="Satuan" Binding="{Binding Unit}" Width="110"/>
+                            <DataGridTextColumn Header="Versi" Binding="{Binding Version}" Width="70"/>
+                            <DataGridTextColumn Header="Berlaku" Binding="{Binding Validity}" Width="190"/>
+                            <DataGridTextColumn Header="Sumber" Binding="{Binding Source}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </TabItem>
+
+            <!-- PROFIL -->
+            <TabItem Header="Profil &amp; Kendaraan">
+                <StackPanel Margin="16" MaxWidth="480" HorizontalAlignment="Left">
+                    <TextBlock Style="{StaticResource Heading}" Text="Profil baru"/>
+                    <TextBox Text="{Binding NewProfileName, UpdateSourceTrigger=PropertyChanged}"/>
+                    <Button Content="Buat profil" Command="{Binding CreateProfileCommand}" HorizontalAlignment="Left"/>
+                    <TextBlock Style="{StaticResource Heading}" Text="Tambah kendaraan ke profil terpilih" Margin="0,16,0,8"/>
+                    <TextBlock Text="Nama kendaraan"/><TextBox Text="{Binding NewVehicleName, UpdateSourceTrigger=PropertyChanged}"/>
+                    <TextBlock Text="Tipe"/><ComboBox ItemsSource="{Binding VehicleTypes}" SelectedItem="{Binding NewVehicleType}"/>
+                    <TextBlock Text="Bahan bakar"/><ComboBox ItemsSource="{Binding FuelTypes}" SelectedItem="{Binding NewVehicleFuel}"/>
+                    <Button Content="Tambah kendaraan" Command="{Binding AddVehicleCommand}" HorizontalAlignment="Left"/>
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</Window>
