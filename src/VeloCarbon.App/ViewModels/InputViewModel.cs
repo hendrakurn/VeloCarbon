@@ -24,11 +24,11 @@ public partial class InputViewModel : ObservableObject
     public FuelType[] FuelTypes { get; } = Enum.GetValues<FuelType>();
 
     // Perjalanan (jarak)
-    [ObservableProperty] private TransportMode _mode = TransportMode.Motorcycle;
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(DistancePreview)), NotifyPropertyChangedFor(nameof(DistancePreviewDetails))] private TransportMode _mode = TransportMode.Motorcycle;
     [ObservableProperty] private Vehicle? _distanceVehicle;
-    [ObservableProperty] private DateTime _distanceDate = DateTime.Today;
-    [ObservableProperty] private string _distanceKm = "";
-    [ObservableProperty] private string _frequency = "1";
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(DistancePreview)), NotifyPropertyChangedFor(nameof(DistancePreviewDetails))] private DateTime _distanceDate = DateTime.Today;
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(DistancePreview)), NotifyPropertyChangedFor(nameof(DistancePreviewDetails))] private string _distanceKm = "";
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(DistancePreview)), NotifyPropertyChangedFor(nameof(DistancePreviewDetails))] private string _frequency = "1";
 
     // Bahan bakar
     [ObservableProperty] private Vehicle? _fuelVehicle;
@@ -46,6 +46,31 @@ public partial class InputViewModel : ObservableObject
     public InputViewModel(ScopeRunner run, Shell shell, Func<Task> refreshAll)
     { _run = run; _shell = shell; _refreshAll = refreshAll; Appliances.Add(new ApplianceRow()); }
 
+    private List<EmissionFactor> _previewFactors = new();
+
+    private (decimal Km, EmissionFactor Factor)? GetDistanceEstimate()
+    {
+        if (!Num.TryDecimal(DistanceKm, out var km) || km <= 0 ||
+            !int.TryParse(Frequency, out var trips) || trips <= 0 || km > decimal.MaxValue / trips)
+            return null;
+
+        var activity = new MobilityActivity { TransportMode = Mode, ActivityDate = DistanceDate };
+        try
+        {
+            var total = km * trips;
+            var factor = EmissionFactorService.Resolve(_previewFactors, activity);
+            return factor.Value > 1 && total > decimal.MaxValue / factor.Value ? null : (total, factor);
+        }
+        catch (DomainException) { return null; }
+    }
+
+    public string DistancePreview => GetDistanceEstimate() is { } result
+        ? Num.Kg(result.Km * result.Factor.Value) : "—";
+
+    public string DistancePreviewDetails => GetDistanceEstimate() is { } result
+        ? $"Total jarak {result.Km:0.##} km · Faktor {result.Factor.Value:0.####} kgCO₂e/km ({result.Factor.Version})"
+        : "Isi jarak dan frekuensi yang valid serta pilih moda dengan faktor emisi yang tersedia.";
+
     public async Task LoadVehiclesAsync()
     {
         var id = _shell.RequireProfile();
@@ -54,6 +79,9 @@ public partial class InputViewModel : ObservableObject
         foreach (var v in p?.Vehicles ?? new()) Vehicles.Add(v);
         DistanceVehicle = Vehicles.FirstOrDefault();
         FuelVehicle = Vehicles.FirstOrDefault();
+        _previewFactors = await _run.RunAsync(sp => ((EmissionFactorService)sp.GetService(typeof(EmissionFactorService))!).GetAllAsync());
+        OnPropertyChanged(nameof(DistancePreview));
+        OnPropertyChanged(nameof(DistancePreviewDetails));
     }
 
     private async Task SaveAsync(Func<ActivityService, Task> action, string ok, Action? clear = null)

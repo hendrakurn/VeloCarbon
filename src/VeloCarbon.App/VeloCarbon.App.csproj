@@ -18,6 +18,7 @@
     <ProjectReference Include="..\VeloCarbon.Infrastructure\VeloCarbon.Infrastructure.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Assets/velocarbon-logo.png" />
     <Content Include="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
