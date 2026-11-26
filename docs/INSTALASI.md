@@ -72,7 +72,8 @@ dotnet test                                             # 44 unit test
 VELOCARBON_TEST_DB="Host=localhost;Username=velocarbon;Password=velocarbon;Database=postgres" dotnet test   # + 4 tes integrasi PostgreSQL
 dotnet run --project src/VeloCarbon.Api                 # API  (Swagger: http://localhost:5080/swagger)
 dotnet run --project src/VeloCarbon.App                 # WPF  (khusus Windows)
-./deploy/build-release.sh                               # paket dist/VeloCarbon-MVP.zip
+.\deploy\build-release.ps1                              # paket dist\VeloCarbon-MVP.zip (PowerShell Windows)
+./deploy/build-release.sh                               # paket dist/VeloCarbon-MVP.zip (Git Bash / Linux)
 ```
 
 Migrasi baru: `dotnet ef migrations add <Nama> -p src/VeloCarbon.Infrastructure -o Persistence/Migrations`.
