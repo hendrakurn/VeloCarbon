@@ -24,7 +24,7 @@ public partial class HistoryViewModel : ObservableObject
         foreach (var a in list)
             Rows.Add(new ActivityRow(a.Id, a.ReferenceDate.ToString("dd MMM yyyy"), DashboardService.LabelOf(a),
                 $"{a.GetActivityValue():0.##} {a.Unit}", a.Calculation == null ? "-" : Num.Kg(a.Calculation.ResultKgCO2e),
-                a.Calculation?.EmissionFactor == null ? "-" : $"v{a.Calculation.EmissionFactor.Version} ({a.Calculation.EmissionFactor.Value:0.###}/{a.Unit})"));
+                a.Calculation?.EmissionFactor == null ? "-" : $"v{a.Calculation.EmissionFactor.Version} · {a.Calculation.EmissionFactor.Value:0.###} kgCO2e/{a.Unit} · {a.Calculation.EmissionFactor.Source}"));
     }
 
     [RelayCommand]

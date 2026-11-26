@@ -127,7 +127,7 @@
                                 </StackPanel>
                             </Border>
                         </Grid>
-                        <TextBlock Text="Estimasi edukatif berdasarkan catatan mobilitas dan listrik." Style="{StaticResource Hint}" Margin="0,16,0,0"/>
+                        <TextBlock Text="Estimasi edukatif berdasarkan faktor emisi lokal berversi; bukan inventarisasi emisi resmi atau dasar klaim sertifikasi." Style="{StaticResource Hint}" Margin="0,16,0,0"/>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
@@ -208,7 +208,11 @@
                             <DataGridTextColumn Header="Aktivitas" Binding="{Binding Label}" Width="2*"/>
                             <DataGridTextColumn Header="Nilai" Binding="{Binding Value}" Width="*"/>
                             <DataGridTextColumn Header="Emisi" Binding="{Binding Kg}" Width="*"/>
-                            <DataGridTextColumn Header="Faktor (versi, nilai)" Binding="{Binding Source}" Width="1.5*"/>
+                            <DataGridTextColumn Header="Faktor (versi, nilai, sumber)" Binding="{Binding Source}" Width="2.5*">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock"><Setter Property="TextWrapping" Value="Wrap"/><Setter Property="Margin" Value="2,3"/></Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
                         </DataGrid.Columns>
                     </DataGrid>
                 </DockPanel></Border>
@@ -244,7 +248,11 @@
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="#" Binding="{Binding Priority}" Width="40"/>
                             <DataGridTextColumn Header="Target" Binding="{Binding Title}" Width="1.5*"/>
-                            <DataGridTextColumn Header="Aksi yang disarankan" Binding="{Binding Action}" Width="3*"/>
+                            <DataGridTextColumn Header="Aksi yang disarankan" Binding="{Binding Action}" Width="3*">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock"><Setter Property="TextWrapping" Value="Wrap"/><Setter Property="Margin" Value="2,3"/></Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
                             <DataGridTextColumn Header="Estimasi pengurangan" Binding="{Binding Reduction}" Width="1.2*"/>
                         </DataGrid.Columns>
                     </DataGrid>
@@ -272,8 +280,12 @@
                             <DataGridTextColumn Header="Nilai" Binding="{Binding Value}" Width="70"/>
                             <DataGridTextColumn Header="Satuan" Binding="{Binding Unit}" Width="110"/>
                             <DataGridTextColumn Header="Versi" Binding="{Binding Version}" Width="70"/>
-                            <DataGridTextColumn Header="Berlaku" Binding="{Binding Validity}" Width="190"/>
-                            <DataGridTextColumn Header="Sumber" Binding="{Binding Source}" Width="*"/>
+                            <DataGridTextColumn Header="Berlaku" Binding="{Binding Validity}" Width="165"/>
+                            <DataGridTextColumn Header="Sumber" Binding="{Binding Source}" Width="*">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock"><Setter Property="TextWrapping" Value="Wrap"/><Setter Property="Margin" Value="2,3"/></Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
                         </DataGrid.Columns>
                     </DataGrid>
                 </DockPanel></Border>

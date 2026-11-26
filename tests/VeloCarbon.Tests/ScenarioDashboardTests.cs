@@ -119,4 +119,69 @@ public class ScenarioDashboardTests
         Assert.Equal(10m, t[2].TotalKgCO2e);
         Assert.Equal(0m, t[0].TotalKgCO2e);
     }
+
+    [Fact] public async Task Factor_new_version_closes_previous_and_preserves_historical_records()
+    {
+        var factorSvc = new EmissionFactorService(_s, _s);
+        var oldAct = await _act.AddMeterElectricityAsync(new(_p, Sep, 20)); // pakai t1 (0.5) -> 10 kg
+
+        var v2 = await factorSvc.AddNewVersionAsync(new EmissionFactor
+        {
+            Category = EmissionCategory.Electricity, Subcategory = "Grid", Value = 0.75m, Unit = ActivityUnit.KWh,
+            Source = "PLN 2026", Version = "t2", ValidFrom = new DateTime(2026, 10, 1)
+        });
+        var newAct = await _act.AddMeterElectricityAsync(new(_p, new DateTime(2026, 10, 1), 20)); // pakai t2 (0.75) -> 15 kg
+
+        // Versi lama otomatis ditutup sehari sebelum versi baru berlaku
+        var oldFactor = _s.Factors.First(f => f.Version == "t1" && f.Subcategory == "Grid");
+        Assert.Equal(new DateTime(2026, 9, 30), oldFactor.ValidUntil);
+
+        // Catatan lama tetap menampilkan versi & sumber semula
+        Assert.Equal("t1", oldAct.Calculation!.EmissionFactor!.Version);
+        Assert.Equal("sintetis-uji", oldAct.Calculation.EmissionFactor.Source);
+        Assert.Equal(10m, oldAct.Calculation.ResultKgCO2e);
+
+        // Catatan baru memakai versi & sumber baru
+        Assert.Equal(v2.Id, newAct.Calculation!.EmissionFactorId);
+        Assert.Equal("t2", newAct.Calculation.EmissionFactor!.Version);
+        Assert.Equal("PLN 2026", newAct.Calculation.EmissionFactor.Source);
+        Assert.Equal(15m, newAct.Calculation.ResultKgCO2e);
+    }
+
+    [Fact] public async Task Six_month_fixture_and_profile_switching_isolate_aggregates()
+    {
+        var pr = new ProfileService(_s, _s);
+        var other = (await pr.CreateProfileAsync("Profil Kedua")).Id;
+
+        // Profil utama: 6 bulan (Apr–Sep 2026), beberapa bulan kosong
+        await _act.AddMeterElectricityAsync(new(_p, new DateTime(2026, 4, 1), 10));  // Apr: 5 kg
+        await _act.AddMeterElectricityAsync(new(_p, new DateTime(2026, 7, 1), 40));  // Jul: 20 kg
+        await _act.AddDistanceAsync(new(_p, _motor, Sep.AddDays(3), TransportMode.Motorcycle, 15, 2)); // Sep: 6 kg
+        await _act.AddMeterElectricityAsync(new(_p, Sep, 28));                                         // Sep: 14 kg
+
+        // Profil kedua di bulan yang sama tidak boleh mencampuri profil utama
+        await _act.AddMeterElectricityAsync(new(other, Sep, 100)); // 50 kg
+
+        var summary = await _dash.GetSummaryAsync(_p, Sep);
+        Assert.Equal(20m, summary.TotalKgCO2e);
+        Assert.Equal("Listrik", summary.TopSource);
+        Assert.Equal(70m, summary.Categories.First(c => c.Label == "Listrik").SharePercent);
+        Assert.Equal(30m, summary.Categories.First(c => c.Label == "Mobilitas - Motorcycle").SharePercent);
+
+        var trend = await _dash.GetTrendAsync(_p, Sep, 6);
+        Assert.Equal(6, trend.Count);
+        Assert.Equal(new[] { 5m, 0m, 0m, 20m, 0m, 20m }, trend.Select(x => x.TotalKgCO2e).ToArray());
+
+        var otherSummary = await _dash.GetSummaryAsync(other, Sep);
+        Assert.Equal(50m, otherSummary.TotalKgCO2e);
+        Assert.Equal("Listrik", otherSummary.TopSource);
+    }
+
+    [Fact] public async Task Missing_factor_message_mentions_unit_and_actionable_guidance()
+    {
+        _s.Factors.Clear();
+        var ex = await Assert.ThrowsAsync<DomainException>(() => _act.AddMeterElectricityAsync(new(_p, Sep, 10)));
+        Assert.Contains("KWh", ex.Message);
+        Assert.Contains("2026-09-01", ex.Message);
+    }
 }
