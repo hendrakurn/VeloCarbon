@@ -119,4 +119,33 @@ public class DatabaseIntegrationTests
         }
         finally { await Drop(sp); }
     }
+
+    [FactIfDb] public async Task Profile_and_vehicle_crud_and_activity_reference_protection_work_in_postgres()
+    {
+        var sp = Build(out _);
+        try
+        {
+            using var scope = sp.CreateScope();
+            await DatabaseInitializer.InitializeAsync(scope.ServiceProvider, false);
+            var pr = scope.ServiceProvider.GetRequiredService<ProfileService>();
+            var act = scope.ServiceProvider.GetRequiredService<ActivityService>();
+
+            var p = await pr.CreateProfileAsync("Awal");
+            await pr.UpdateProfileAsync(p.Id, "Diperbarui");
+            var v = await pr.AddVehicleAsync(p.Id, "Motor 1", TransportMode.Motorcycle, FuelType.Petrol);
+            await pr.UpdateVehicleAsync(p.Id, v.Id, "Motor Utama", TransportMode.Motorcycle, FuelType.Petrol);
+
+            var a = await act.AddDistanceAsync(new(p.Id, v.Id, new DateTime(2026, 9, 5), TransportMode.Motorcycle, 10, 2));
+            await Assert.ThrowsAsync<DomainException>(() => pr.DeleteVehicleAsync(p.Id, v.Id));
+            await Assert.ThrowsAsync<DomainException>(() => pr.UpdateVehicleAsync(p.Id, v.Id, "Motor Utama", TransportMode.Car, FuelType.Petrol));
+
+            await act.DeleteAsync(a.Id);
+            await pr.DeleteVehicleAsync(p.Id, v.Id);
+
+            var reloaded = await pr.GetAsync(p.Id);
+            Assert.Equal("Diperbarui", reloaded!.Name);
+            Assert.Empty(reloaded.Vehicles);
+        }
+        finally { await Drop(sp); }
+    }
 }

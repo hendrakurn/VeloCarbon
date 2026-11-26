@@ -70,7 +70,7 @@ public class ActivityService
     public async Task<ActivityRecord> AddMeterElectricityAsync(MeterElectricityInput i)
     {
         await RequireProfileAsync(i.ProfileId);
-        if (i.UsageKWh <= 0) throw new DomainException("Total kWh harus lebih dari 0.");
+        if (i.UsageKWh < 0) throw new DomainException("Total kWh tidak boleh negatif.");
         await EnsureNoElectricityAsync(i.ProfileId, i.Month);
         var e = NewElectricity(i.ProfileId, i.Month, ElectricityInputMethod.MeterKWh);
         e.UsageKWh = i.UsageKWh;

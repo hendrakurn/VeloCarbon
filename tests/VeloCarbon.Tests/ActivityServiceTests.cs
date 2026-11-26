@@ -104,4 +104,62 @@ public class ActivityServiceTests
         var other = (await _profiles.CreateProfileAsync("Lain")).Id;
         await Assert.ThrowsAsync<DomainException>(() => _svc.AddDistanceAsync(new(other, _motor, Sep, TransportMode.Motorcycle, 5, 1)));
     }
+
+    [Fact] public async Task Meter_zero_kwh_is_allowed_and_negative_is_rejected()
+    {
+        var zero = await _svc.AddMeterElectricityAsync(new(_profile, Sep, 0m));
+        Assert.Equal(0m, zero.Calculation!.ResultKgCO2e);
+        await Assert.ThrowsAsync<DomainException>(() => _svc.AddMeterElectricityAsync(new(_profile, Sep.AddMonths(1), -1m)));
+    }
+
+    [Fact] public async Task Electricity_method_switch_works_after_delete()
+    {
+        var meter = await _svc.AddMeterElectricityAsync(new(_profile, Sep, 20m));
+        await Assert.ThrowsAsync<DomainException>(() => _svc.AddApplianceElectricityAsync(new(_profile, Sep,
+            new[] { new ApplianceInput("AC", 100, 1, 5, 10) })));
+        await _svc.DeleteAsync(meter.Id);
+        var app = await _svc.AddApplianceElectricityAsync(new(_profile, Sep, new[] { new ApplianceInput("AC", 100, 2, 5, 10) }));
+        Assert.Equal(5m, app.Calculation!.ResultKgCO2e);
+    }
+
+    [Fact] public async Task Profile_can_be_updated_and_empty_name_rejected()
+    {
+        var updated = await _profiles.UpdateProfileAsync(_profile, "  Uji Baru  ");
+        Assert.Equal("Uji Baru", updated.Name);
+        await Assert.ThrowsAsync<DomainException>(() => _profiles.UpdateProfileAsync(_profile, "   "));
+    }
+
+    [Fact] public async Task Unused_vehicle_can_be_updated_and_deleted()
+    {
+        var v = await _profiles.AddVehicleAsync(_profile, "Motor Lama", TransportMode.Motorcycle, FuelType.Petrol);
+        var updated = await _profiles.UpdateVehicleAsync(_profile, v.Id, "Mobil Solar", TransportMode.Car, FuelType.Diesel);
+        Assert.Equal("Mobil Solar", updated.Name);
+        Assert.Equal(TransportMode.Car, updated.VehicleType);
+        Assert.Equal(FuelType.Diesel, updated.FuelType);
+
+        await _profiles.DeleteVehicleAsync(_profile, v.Id);
+        Assert.Null(await _s.GetVehicleAsync(v.Id));
+    }
+
+    [Fact] public async Task Vehicle_with_activities_cannot_be_deleted_or_change_type_fuel_but_can_rename()
+    {
+        var a = await _svc.AddDistanceAsync(new(_profile, _motor, Sep.AddDays(2), TransportMode.Motorcycle, 10, 2));
+
+        // Hapus ditolak dengan pesan jelas
+        var delEx = await Assert.ThrowsAsync<DomainException>(() => _profiles.DeleteVehicleAsync(_profile, _motor));
+        Assert.Contains("aktivitas", delEx.Message, StringComparison.OrdinalIgnoreCase);
+
+        // Ubah tipe atau BBM ditolak
+        await Assert.ThrowsAsync<DomainException>(() => _profiles.UpdateVehicleAsync(_profile, _motor, "Motor", TransportMode.Car, FuelType.Petrol));
+        await Assert.ThrowsAsync<DomainException>(() => _profiles.UpdateVehicleAsync(_profile, _motor, "Motor", TransportMode.Motorcycle, FuelType.Diesel));
+
+        // Ubah nama tetap diperbolehkan
+        var renamed = await _profiles.UpdateVehicleAsync(_profile, _motor, "Motor Kampus", TransportMode.Motorcycle, FuelType.Petrol);
+        Assert.Equal("Motor Kampus", renamed.Name);
+
+        // Setelah aktivitas dihapus, kendaraan bisa dihapus
+        await _svc.DeleteAsync(a.Id);
+        await _profiles.DeleteVehicleAsync(_profile, _motor);
+        Assert.Null(await _s.GetVehicleAsync(_motor));
+    }
 }

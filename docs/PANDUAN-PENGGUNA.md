@@ -15,7 +15,7 @@ Bagian atas selalu menampilkan **Profil** dan **Bulan** yang sedang dilihat. Sem
 | Riwayat | Daftar catatan bulan terpilih beserta emisi dan faktor yang dipakai; hapus catatan |
 | Simulasi | Bandingkan kondisi awal dengan skenario pengurangan; lihat rekomendasi |
 | Faktor Emisi | Faktor yang dipakai: nilai, satuan, sumber, versi, masa berlaku |
-| Profil & Kendaraan | Buat profil dan tambah kendaraan pribadi |
+| Profil & Kendaraan | Buat/ubah profil aktif serta tambah/ubah/hapus kendaraan pribadi |
 
 ## Mulai cepat (5 menit)
 
@@ -43,7 +43,7 @@ Angka boleh memakai koma atau titik desimal (`12,5` atau `12.5`).
 - **Satu kendaraan, satu metode per bulan**: pakai *jarak* **atau** *bahan bakar*, tidak keduanya. Kendaraan atau bulan lain boleh memakai metode berbeda.
 - **Listrik hanya satu catatan per bulan** (meter **atau** estimasi alat).
 - Untuk mengganti metode atau memperbaiki data: **Riwayat → pilih baris → Hapus terpilih**, lalu input ulang. Aplikasi akan menolak input yang bentrok dan menjelaskan alasannya.
-- Jam per hari harus 0–24, hari pakai tidak boleh melebihi jumlah hari dalam bulan; jarak, liter, watt, dan kWh harus lebih dari 0.
+- Jam per hari harus 0–24, hari pakai tidak boleh melebihi jumlah hari dalam bulan; jarak, liter, dan watt harus lebih dari 0 (meter listrik `0 kWh` diperbolehkan untuk bulan tanpa konsumsi).
 
 ## Simulasi
 

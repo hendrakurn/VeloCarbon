@@ -18,6 +18,9 @@ public class InMemoryStore : IProfileRepository, IActivityRepository, IEmissionF
     Task IProfileRepository.AddAsync(UserProfile p) { Profiles.Add(p); return Task.CompletedTask; }
     public Task<Vehicle?> GetVehicleAsync(Guid id) => Task.FromResult(Vehicles.FirstOrDefault(v => v.Id == id));
     public Task AddVehicleAsync(Vehicle v) { Vehicles.Add(v); return Task.CompletedTask; }
+    public Task<bool> VehicleHasActivitiesAsync(Guid vehicleId) => Task.FromResult(
+        Activities.Any(a => (a is MobilityActivity ma && ma.VehicleId == vehicleId) || (a is FuelPurchaseActivity f && f.VehicleId == vehicleId)));
+    public Task RemoveVehicleAsync(Vehicle v) { Vehicles.Remove(v); return Task.CompletedTask; }
 
     Task IActivityRepository.AddAsync(ActivityRecord a) { Activities.Add(a); return Task.CompletedTask; }
     Task<ActivityRecord?> IActivityRepository.GetAsync(Guid id) => Task.FromResult(Activities.FirstOrDefault(a => a.Id == id));
