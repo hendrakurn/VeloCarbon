@@ -11,8 +11,9 @@ Jika `Api:ApiKey` diisi di `appsettings.json`, semua `/api/*` (kecuali `/api/hea
 | GET | `/api/emission-factors` | Daftar faktor emisi (sumber, satuan, versi) |
 | POST | `/api/emission-factors` | Tambah **versi baru** faktor (versi lama ditutup, tidak ditimpa) |
 | GET/POST | `/api/profiles` | Daftar / buat profil |
-| GET | `/api/profiles/{id}` | Detail profil + kendaraan |
+| GET/PUT | `/api/profiles/{id}` | Detail / ubah nama profil |
 | POST | `/api/profiles/{id}/vehicles` | Tambah kendaraan |
+| PUT/DELETE | `/api/profiles/{id}/vehicles/{vehicleId}` | Ubah / hapus kendaraan (ditolak bila masih dipakai aktivitas) |
 | GET | `/api/profiles/{id}/activities?month=yyyy-MM` | Aktivitas satu bulan beserta emisi |
 | POST | `/api/activities/distance` | Catat perjalanan (jarak) |
 | POST | `/api/activities/fuel` | Catat pembelian bahan bakar |

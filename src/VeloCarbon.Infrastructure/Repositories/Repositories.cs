@@ -14,6 +14,12 @@ public class ProfileRepository : IProfileRepository
     public async Task AddAsync(UserProfile profile) => await _db.Profiles.AddAsync(profile);
     public Task<Vehicle?> GetVehicleAsync(Guid id) => _db.Vehicles.FirstOrDefaultAsync(v => v.Id == id);
     public async Task AddVehicleAsync(Vehicle v) => await _db.Vehicles.AddAsync(v);
+    public async Task<bool> VehicleHasActivitiesAsync(Guid vehicleId)
+    {
+        if (await _db.Activities.OfType<MobilityActivity>().AnyAsync(x => x.VehicleId == vehicleId)) return true;
+        return await _db.Activities.OfType<FuelPurchaseActivity>().AnyAsync(x => x.VehicleId == vehicleId);
+    }
+    public Task RemoveVehicleAsync(Vehicle v) { _db.Vehicles.Remove(v); return Task.CompletedTask; }
 }
 
 public class ActivityRepository : IActivityRepository

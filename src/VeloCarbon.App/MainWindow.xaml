@@ -178,6 +178,7 @@
                             <Button Content="+ Tambah alat" Command="{Binding Input.AddApplianceCommand}" Style="{StaticResource SecondaryButton}"/>
                             <Button Content="Hapus alat terpilih" Command="{Binding Input.RemoveApplianceCommand}" Style="{StaticResource SecondaryButton}"/>
                             <Button Content="Simpan listrik (alat)" Command="{Binding Input.SaveAppliancesCommand}"/>
+                            <TextBlock Text="{Binding Input.TotalAppliancesKWhText}" FontWeight="SemiBold" Foreground="{StaticResource Accent}" VerticalAlignment="Center" Margin="12,0,0,0"/>
                         </StackPanel>
                         <DataGrid ItemsSource="{Binding Input.Appliances}" SelectedItem="{Binding Input.SelectedAppliance}" IsReadOnly="False" CanUserAddRows="False">
                             <DataGrid.Columns>
@@ -186,6 +187,7 @@
                                 <DataGridTextColumn Header="Jumlah" Binding="{Binding Quantity, UpdateSourceTrigger=PropertyChanged}" Width="*"/>
                                 <DataGridTextColumn Header="Jam / hari" Binding="{Binding HoursPerDay, UpdateSourceTrigger=PropertyChanged}" Width="*"/>
                                 <DataGridTextColumn Header="Hari pakai" Binding="{Binding DaysUsed, UpdateSourceTrigger=PropertyChanged}" Width="*"/>
+                                <DataGridTextColumn Header="Estimasi (kWh)" Binding="{Binding EstimatedKWhText, Mode=OneWay}" IsReadOnly="True" Width="*"/>
                             </DataGrid.Columns>
                         </DataGrid>
                     </DockPanel></TabItem>
@@ -279,16 +281,47 @@
 
             <!-- PROFIL -->
             <TabItem Header="Profil &amp; Kendaraan"><DockPanel Margin="4,0,10,10"><StackPanel DockPanel.Dock="Top" Margin="0,0,0,12"><TextBlock Text="Profil &amp; Kendaraan" FontSize="32" FontWeight="Bold"/><TextBlock Text="Kelola profil dan kendaraan untuk pencatatan aktivitas." Style="{StaticResource Hint}"/></StackPanel>
-                <ScrollViewer VerticalScrollBarVisibility="Auto"><Grid VerticalAlignment="Top" Margin="0,1,8,10"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="1.3*"/></Grid.ColumnDefinitions><Border Style="{StaticResource Surface}" Padding="22" VerticalAlignment="Top" Margin="0,0,12,0"><StackPanel>
-                    <TextBlock Style="{StaticResource Heading}" Text="Profil baru"/>
-                    <TextBox Text="{Binding NewProfileName, UpdateSourceTrigger=PropertyChanged}"/>
-                    <Button Content="Buat profil" Command="{Binding CreateProfileCommand}" HorizontalAlignment="Left"/>
-                    </StackPanel></Border><Border Grid.Column="1" Style="{StaticResource Surface}" Padding="22"><StackPanel><TextBlock Style="{StaticResource Heading}" Text="Tambah kendaraan"/>
-                    <TextBlock Text="Nama kendaraan"/><TextBox Text="{Binding NewVehicleName, UpdateSourceTrigger=PropertyChanged}"/>
-                    <TextBlock Text="Tipe"/><ComboBox ItemsSource="{Binding VehicleTypes}" SelectedItem="{Binding NewVehicleType}"/>
-                    <TextBlock Text="Bahan bakar"/><ComboBox ItemsSource="{Binding FuelTypes}" SelectedItem="{Binding NewVehicleFuel}"/>
-                    <Button Content="Tambah kendaraan" Command="{Binding AddVehicleCommand}" HorizontalAlignment="Left"/>
-                </StackPanel></Border>
+                <ScrollViewer VerticalScrollBarVisibility="Auto"><Grid VerticalAlignment="Top" Margin="0,1,8,10"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="1.45*"/></Grid.ColumnDefinitions>
+                <StackPanel Margin="0,0,12,0">
+                    <Border Style="{StaticResource Surface}" Padding="22" Margin="0,0,0,12"><StackPanel>
+                        <TextBlock Style="{StaticResource Heading}" Text="Profil baru"/>
+                        <TextBlock Text="Nama profil"/><TextBox Text="{Binding NewProfileName, UpdateSourceTrigger=PropertyChanged}"/>
+                        <Button Content="Buat profil" Command="{Binding CreateProfileCommand}" HorizontalAlignment="Left"/>
+                    </StackPanel></Border>
+                    <Border Style="{StaticResource Surface}" Padding="22"><StackPanel>
+                        <TextBlock Style="{StaticResource Heading}" Text="Ubah profil aktif"/>
+                        <TextBlock Text="Nama profil aktif"/><TextBox Text="{Binding EditProfileName, UpdateSourceTrigger=PropertyChanged}"/>
+                        <Button Content="Simpan nama profil" Command="{Binding UpdateProfileCommand}" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left"/>
+                    </StackPanel></Border>
+                </StackPanel>
+                <StackPanel Grid.Column="1">
+                    <Border Style="{StaticResource Surface}" Padding="22" Margin="0,0,0,12"><StackPanel>
+                        <TextBlock Style="{StaticResource Heading}" Text="Tambah kendaraan"/>
+                        <TextBlock Text="Nama kendaraan"/><TextBox Text="{Binding NewVehicleName, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Text="Tipe"/><ComboBox ItemsSource="{Binding VehicleTypes}" SelectedItem="{Binding NewVehicleType}"/>
+                        <TextBlock Text="Bahan bakar"/><ComboBox ItemsSource="{Binding FuelTypes}" SelectedItem="{Binding NewVehicleFuel}"/>
+                        <Button Content="Tambah kendaraan" Command="{Binding AddVehicleCommand}" HorizontalAlignment="Left"/>
+                    </StackPanel></Border>
+                    <Border Style="{StaticResource Surface}" Padding="22"><StackPanel>
+                        <TextBlock Style="{StaticResource Heading}" Text="Daftar kendaraan profil aktif"/>
+                        <DataGrid ItemsSource="{Binding ProfileVehicles}" SelectedItem="{Binding SelectedVehicle}" SelectionMode="Single" MaxHeight="160" Margin="0,0,0,10">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Nama" Binding="{Binding Name}" Width="2*"/>
+                                <DataGridTextColumn Header="Tipe" Binding="{Binding VehicleType}" Width="*"/>
+                                <DataGridTextColumn Header="Bahan bakar" Binding="{Binding FuelType}" Width="*"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <TextBlock Text="Ubah kendaraan terpilih" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                        <TextBlock Text="Nama kendaraan"/><TextBox Text="{Binding EditVehicleName, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Text="Tipe"/><ComboBox ItemsSource="{Binding VehicleTypes}" SelectedItem="{Binding EditVehicleType}"/>
+                        <TextBlock Text="Bahan bakar"/><ComboBox ItemsSource="{Binding FuelTypes}" SelectedItem="{Binding EditVehicleFuel}"/>
+                        <TextBlock Style="{StaticResource Hint}" Text="Kendaraan yang sudah memiliki aktivitas hanya dapat diubah namanya dan tidak dapat dihapus sebelum aktivitas terkait dihapus di Riwayat." TextWrapping="Wrap" Margin="0,0,0,6"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="Simpan perubahan" Command="{Binding UpdateVehicleCommand}" Style="{StaticResource SecondaryButton}"/>
+                            <Button Content="Hapus kendaraan" Command="{Binding DeleteVehicleCommand}" Background="{StaticResource ErrorBrush}"/>
+                        </StackPanel>
+                    </StackPanel></Border>
+                </StackPanel>
             </Grid></ScrollViewer></DockPanel></TabItem>
             </TabControl>
         </DockPanel>

@@ -20,13 +20,26 @@ public partial class MainViewModel : ObservableObject
 
     public ObservableCollection<UserProfile> Profiles { get; } = new();
     public ObservableCollection<DateTime> Months { get; } = new();
+    public ObservableCollection<Vehicle> ProfileVehicles { get; } = new();
 
     [ObservableProperty] private string _newProfileName = "";
+    [ObservableProperty] private string _editProfileName = "";
     [ObservableProperty] private string _newVehicleName = "";
     [ObservableProperty] private TransportMode _newVehicleType = TransportMode.Motorcycle;
     [ObservableProperty] private FuelType _newVehicleFuel = FuelType.Petrol;
+    [ObservableProperty] private Vehicle? _selectedVehicle;
+    [ObservableProperty] private string _editVehicleName = "";
+    [ObservableProperty] private TransportMode _editVehicleType = TransportMode.Motorcycle;
+    [ObservableProperty] private FuelType _editVehicleFuel = FuelType.Petrol;
     public TransportMode[] VehicleTypes { get; } = { TransportMode.Motorcycle, TransportMode.Car };
     public FuelType[] FuelTypes { get; } = Enum.GetValues<FuelType>();
+
+    partial void OnSelectedVehicleChanged(Vehicle? value)
+    {
+        EditVehicleName = value?.Name ?? "";
+        EditVehicleType = value?.VehicleType ?? TransportMode.Motorcycle;
+        EditVehicleFuel = value?.FuelType ?? FuelType.Petrol;
+    }
 
     public MainViewModel(ScopeRunner run, Shell shell)
     {
@@ -67,7 +80,19 @@ public partial class MainViewModel : ObservableObject
 
     public async Task RefreshAllAsync()
     {
-        if (Shell.ProfileId == null) { Shell.Info("Belum ada profil. Buat profil di tab Profil & Kendaraan."); return; }
+        if (Shell.ProfileId == null)
+        {
+            EditProfileName = "";
+            ProfileVehicles.Clear();
+            SelectedVehicle = null;
+            Shell.Info("Belum ada profil. Buat profil di tab Profil & Kendaraan.");
+            return;
+        }
+        EditProfileName = Shell.SelectedProfile?.Name ?? "";
+        var prevVehicleId = SelectedVehicle?.Id;
+        ProfileVehicles.Clear();
+        foreach (var v in Shell.SelectedProfile?.Vehicles ?? new()) ProfileVehicles.Add(v);
+        SelectedVehicle = ProfileVehicles.FirstOrDefault(v => v.Id == prevVehicleId) ?? ProfileVehicles.FirstOrDefault();
         await Shell.TryAsync(async () =>
         {
             await Input.LoadVehiclesAsync();
@@ -88,12 +113,46 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private async Task UpdateProfileAsync()
+    {
+        var id = Shell.ProfileId;
+        if (id == null) { Shell.Error("Pilih profil terlebih dahulu."); return; }
+        var ok = await Shell.TryAsync(async () =>
+            await _run.RunAsync(sp => sp.GetService<ProfileService>()!.UpdateProfileAsync(id.Value, EditProfileName)),
+            "Profil diperbarui.");
+        if (ok) await LoadProfilesAsync(id);
+    }
+
+    [RelayCommand]
     private async Task AddVehicleAsync()
     {
         var ok = await Shell.TryAsync(async () =>
             await _run.RunAsync(sp => sp.GetService<ProfileService>()!.AddVehicleAsync(Shell.RequireProfile(), NewVehicleName, NewVehicleType, NewVehicleFuel)),
             "Kendaraan ditambahkan.");
         if (ok) { NewVehicleName = ""; await LoadProfilesAsync(Shell.ProfileId); }
+    }
+
+    [RelayCommand]
+    private async Task UpdateVehicleAsync()
+    {
+        if (SelectedVehicle == null) { Shell.Error("Pilih kendaraan yang akan diubah."); return; }
+        var vid = SelectedVehicle.Id;
+        var ok = await Shell.TryAsync(async () =>
+            await _run.RunAsync(sp => sp.GetService<ProfileService>()!.UpdateVehicleAsync(Shell.RequireProfile(), vid, EditVehicleName, EditVehicleType, EditVehicleFuel)),
+            "Kendaraan diperbarui.");
+        if (ok) { await LoadProfilesAsync(Shell.ProfileId); SelectedVehicle = ProfileVehicles.FirstOrDefault(v => v.Id == vid); }
+    }
+
+    [RelayCommand]
+    private async Task DeleteVehicleAsync()
+    {
+        if (SelectedVehicle == null) { Shell.Error("Pilih kendaraan yang akan dihapus."); return; }
+        if (!Shell.Confirm($"Hapus kendaraan '{SelectedVehicle.Name}'?")) return;
+        var vid = SelectedVehicle.Id;
+        var ok = await Shell.TryAsync(async () =>
+            await _run.RunAsync(sp => sp.GetService<ProfileService>()!.DeleteVehicleAsync(Shell.RequireProfile(), vid)),
+            "Kendaraan dihapus.");
+        if (ok) await LoadProfilesAsync(Shell.ProfileId);
     }
 }
 

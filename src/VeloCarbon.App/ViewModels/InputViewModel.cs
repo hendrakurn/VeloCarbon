@@ -9,11 +9,29 @@ namespace VeloCarbon.App.ViewModels;
 
 public partial class ApplianceRow : ObservableObject
 {
+    private readonly Action? _onChanged;
+    public ApplianceRow(Action? onChanged = null) => _onChanged = onChanged;
+
     [ObservableProperty] private string _name = "";
-    [ObservableProperty] private string _powerWatt = "";
-    [ObservableProperty] private string _quantity = "1";
-    [ObservableProperty] private string _hoursPerDay = "";
-    [ObservableProperty] private string _daysUsed = "";
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(EstimatedKWhText))] private string _powerWatt = "";
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(EstimatedKWhText))] private string _quantity = "1";
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(EstimatedKWhText))] private string _hoursPerDay = "";
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(EstimatedKWhText))] private string _daysUsed = "";
+
+    partial void OnPowerWattChanged(string value) => _onChanged?.Invoke();
+    partial void OnQuantityChanged(string value) => _onChanged?.Invoke();
+    partial void OnHoursPerDayChanged(string value) => _onChanged?.Invoke();
+    partial void OnDaysUsedChanged(string value) => _onChanged?.Invoke();
+
+    public decimal? EstimatedKWh =>
+        Num.TryDecimal(PowerWatt, out var w) && w > 0 &&
+        int.TryParse(Quantity, out var q) && q >= 1 &&
+        Num.TryDecimal(HoursPerDay, out var h) && h > 0 && h <= 24 &&
+        int.TryParse(DaysUsed, out var d) && d >= 1 && d <= 31
+            ? w / 1000m * q * h * d
+            : null;
+
+    public string EstimatedKWhText => EstimatedKWh is { } kwh ? $"{kwh:0.##} kWh" : "—";
 }
 
 public partial class InputViewModel : ObservableObject
@@ -44,7 +62,10 @@ public partial class InputViewModel : ObservableObject
     [ObservableProperty] private ApplianceRow? _selectedAppliance;
 
     public InputViewModel(ScopeRunner run, Shell shell, Func<Task> refreshAll)
-    { _run = run; _shell = shell; _refreshAll = refreshAll; Appliances.Add(new ApplianceRow()); }
+    { _run = run; _shell = shell; _refreshAll = refreshAll; Appliances.Add(NewApplianceRow()); }
+
+    private ApplianceRow NewApplianceRow() => new(() => OnPropertyChanged(nameof(TotalAppliancesKWhText)));
+    public string TotalAppliancesKWhText => $"Total estimasi: {Appliances.Sum(a => a.EstimatedKWh ?? 0m):0.##} kWh";
 
     private List<EmissionFactor> _previewFactors = new();
 
@@ -111,12 +132,13 @@ public partial class InputViewModel : ObservableObject
         s.AddMeterElectricityAsync(new MeterElectricityInput(_shell.RequireProfile(), _shell.SelectedMonth, Num.Decimal(Kwh, "Total kWh"))),
         "Listrik (meter) tersimpan dan emisi dihitung.", () => Kwh = "");
 
-    [RelayCommand] private void AddAppliance() => Appliances.Add(new ApplianceRow());
+    [RelayCommand] private void AddAppliance() { Appliances.Add(NewApplianceRow()); OnPropertyChanged(nameof(TotalAppliancesKWhText)); }
     [RelayCommand]
     private void RemoveAppliance()
     {
         if (SelectedAppliance != null) Appliances.Remove(SelectedAppliance);
-        if (Appliances.Count == 0) Appliances.Add(new ApplianceRow());
+        if (Appliances.Count == 0) Appliances.Add(NewApplianceRow());
+        OnPropertyChanged(nameof(TotalAppliancesKWhText));
     }
 
     [RelayCommand]
@@ -125,5 +147,5 @@ public partial class InputViewModel : ObservableObject
         var list = Appliances.Select(a => new ApplianceInput(a.Name, Num.Decimal(a.PowerWatt, $"Daya '{a.Name}'"), Num.Int(a.Quantity, $"Jumlah '{a.Name}'"),
             Num.Decimal(a.HoursPerDay, $"Jam/hari '{a.Name}'"), Num.Int(a.DaysUsed, $"Hari pakai '{a.Name}'"))).ToList();
         return s.AddApplianceElectricityAsync(new ApplianceElectricityInput(_shell.RequireProfile(), _shell.SelectedMonth, list));
-    }, "Listrik (estimasi alat) tersimpan dan emisi dihitung.", () => { Appliances.Clear(); Appliances.Add(new ApplianceRow()); });
+    }, "Listrik (estimasi alat) tersimpan dan emisi dihitung.", () => { Appliances.Clear(); Appliances.Add(NewApplianceRow()); OnPropertyChanged(nameof(TotalAppliancesKWhText)); });
 }

@@ -9,6 +9,8 @@ public interface IProfileRepository
     Task AddAsync(UserProfile profile);
     Task<Vehicle?> GetVehicleAsync(Guid vehicleId);
     Task AddVehicleAsync(Vehicle vehicle);
+    Task<bool> VehicleHasActivitiesAsync(Guid vehicleId);
+    Task RemoveVehicleAsync(Vehicle vehicle);
 }
 
 public interface IActivityRepository

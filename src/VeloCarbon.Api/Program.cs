@@ -90,8 +90,13 @@ api.MapPost("/profiles", async (CreateProfileRequest r, ProfileService s) =>
     return Results.Created($"/api/profiles/{p.Id}", p);
 }).WithTags("Profil");
 api.MapGet("/profiles/{id:guid}", async (Guid id, ProfileService s) => await s.GetAsync(id) is { } p ? Results.Ok(p) : Results.NotFound(new { error = "Profil tidak ditemukan." })).WithTags("Profil");
+api.MapPut("/profiles/{id:guid}", async (Guid id, CreateProfileRequest r, ProfileService s) => Results.Ok(await s.UpdateProfileAsync(id, r.Name))).WithTags("Profil");
 api.MapPost("/profiles/{id:guid}/vehicles", async (Guid id, CreateVehicleRequest r, ProfileService s) =>
     Results.Created($"/api/profiles/{id}", await s.AddVehicleAsync(id, r.Name, r.VehicleType, r.FuelType))).WithTags("Profil");
+api.MapPut("/profiles/{id:guid}/vehicles/{vehicleId:guid}", async (Guid id, Guid vehicleId, CreateVehicleRequest r, ProfileService s) =>
+    Results.Ok(await s.UpdateVehicleAsync(id, vehicleId, r.Name, r.VehicleType, r.FuelType))).WithTags("Profil");
+api.MapDelete("/profiles/{id:guid}/vehicles/{vehicleId:guid}", async (Guid id, Guid vehicleId, ProfileService s) =>
+    { await s.DeleteVehicleAsync(id, vehicleId); return Results.NoContent(); }).WithTags("Profil");
 
 // ---- Aktivitas ----
 api.MapGet("/profiles/{id:guid}/activities", async (Guid id, string? month, ActivityService s) =>
