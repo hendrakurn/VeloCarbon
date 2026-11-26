@@ -148,4 +148,43 @@ public class DatabaseIntegrationTests
         }
         finally { await Drop(sp); }
     }
+
+    [FactIfDb] public async Task Versioned_factor_preserves_old_activity_factor_after_reload_in_postgres()
+    {
+        var sp = Build(out _);
+        try
+        {
+            Guid profileId;
+            using (var scope = sp.CreateScope())
+            {
+                await DatabaseInitializer.InitializeAsync(scope.ServiceProvider, false);
+                var pr = scope.ServiceProvider.GetRequiredService<ProfileService>();
+                var act = scope.ServiceProvider.GetRequiredService<ActivityService>();
+                var fac = scope.ServiceProvider.GetRequiredService<EmissionFactorService>();
+
+                var p = await pr.CreateProfileAsync("Versi Uji");
+                profileId = p.Id;
+                await act.AddMeterElectricityAsync(new(p.Id, new DateTime(2026, 9, 1), 10)); // 2024.1 (0.87) -> 8.70
+                await fac.AddNewVersionAsync(new EmissionFactor
+                {
+                    Category = EmissionCategory.Electricity, Subcategory = "Grid", Value = 0.90m, Unit = ActivityUnit.KWh,
+                    Source = "KESDM/PLN Pembaruan 2026", Version = "2026.2", ValidFrom = new DateTime(2026, 10, 1)
+                });
+                await act.AddMeterElectricityAsync(new(p.Id, new DateTime(2026, 10, 1), 10)); // 2026.2 (0.90) -> 9.00
+            }
+            using (var scope = sp.CreateScope())
+            {
+                var act = scope.ServiceProvider.GetRequiredService<ActivityService>();
+                var sep = (await act.GetMonthAsync(profileId, new DateTime(2026, 9, 1))).Single();
+                var oct = (await act.GetMonthAsync(profileId, new DateTime(2026, 10, 1))).Single();
+
+                Assert.Equal("2024.1", sep.Calculation!.EmissionFactor!.Version);
+                Assert.Equal(8.7m, sep.Calculation.ResultKgCO2e);
+                Assert.Equal("2026.2", oct.Calculation!.EmissionFactor!.Version);
+                Assert.Equal("KESDM/PLN Pembaruan 2026", oct.Calculation.EmissionFactor.Source);
+                Assert.Equal(9.0m, oct.Calculation.ResultKgCO2e);
+            }
+        }
+        finally { await Drop(sp); }
+    }
 }

@@ -71,8 +71,8 @@ api.MapPost("/estimate", async (EstimateRequest r, EmissionFactorService factors
     if (r.Value <= 0) throw new DomainException("Nilai harus lebih dari 0.");
     var f = EmissionFactorService.Resolve(await factors.GetAllAsync(), a);
     var c = calc.CalculateActivityEmission(a, f);
-    return new { c.ActivityValue, unit = a.Unit, factor = f.Value, factorSource = f.Source, factorVersion = f.Version, kgCO2e = c.ResultKgCO2e,
-                 note = "Estimasi edukatif, bukan inventarisasi emisi resmi." };
+    return new { activityValue = Math.Round(c.ActivityValue, 2, MidpointRounding.AwayFromZero), unit = a.Unit, factor = f.Value, factorUnit = $"kgCO2e/{a.Unit}", factorSource = f.Source, factorVersion = f.Version, kgCO2e = Math.Round(c.ResultKgCO2e, 2, MidpointRounding.AwayFromZero),
+                 note = "Estimasi edukatif berdasarkan faktor emisi lokal berversi; bukan inventarisasi emisi resmi atau dasar klaim sertifikasi." };
 }).WithTags("Kalkulator").WithSummary("Hitung estimasi emisi sekali pakai (tidak disimpan)");
 
 api.MapGet("/emission-factors", (EmissionFactorService s) => s.GetAllAsync()).WithTags("Faktor Emisi");
@@ -113,7 +113,14 @@ api.MapGet("/profiles/{id:guid}/trend", (Guid id, string? endMonth, int? months,
 api.MapGet("/profiles/{id:guid}/report", async (Guid id, string? month, DashboardService d, ActivityService a) =>
 {
     var m = ParseMonth(month);
-    return new { summary = await d.GetSummaryAsync(id, m), trend = await d.GetTrendAsync(id, m, 6), activities = (await a.GetMonthAsync(id, m)).Select(ActivityDto.From) };
+    return new
+    {
+        unit = "kgCO2e",
+        note = "Estimasi edukatif berdasarkan faktor emisi lokal berversi; bukan inventarisasi emisi resmi atau dasar klaim sertifikasi.",
+        summary = await d.GetSummaryAsync(id, m),
+        trend = await d.GetTrendAsync(id, m, 6),
+        activities = (await a.GetMonthAsync(id, m)).Select(ActivityDto.From)
+    };
 }).WithTags("Dashboard").WithSummary("Laporan bulanan: ringkasan, tren 6 bulan, dan rincian aktivitas");
 
 // ---- Skenario ----
@@ -129,8 +136,8 @@ public record CreateVehicleRequest(string Name, TransportMode VehicleType, FuelT
 
 public record ActivityDto(Guid Id, string Type, DateTime Date, string Label, decimal ActivityValue, ActivityUnit Unit, decimal? KgCO2e, string? FactorSource, string? FactorVersion)
 {
-    public static ActivityDto From(ActivityRecord a) => new(a.Id, a.GetType().Name, a.ReferenceDate, DashboardService.LabelOf(a), a.GetActivityValue(), a.Unit,
-        a.Calculation?.ResultKgCO2e, a.Calculation?.EmissionFactor?.Source, a.Calculation?.EmissionFactor?.Version);
+    public static ActivityDto From(ActivityRecord a) => new(a.Id, a.GetType().Name, a.ReferenceDate, DashboardService.LabelOf(a), Math.Round(a.GetActivityValue(), 2, MidpointRounding.AwayFromZero), a.Unit,
+        a.Calculation is { } c ? Math.Round(c.ResultKgCO2e, 2, MidpointRounding.AwayFromZero) : null, a.Calculation?.EmissionFactor?.Source, a.Calculation?.EmissionFactor?.Version);
 }
 public record RecommendationDto(int Priority, string Title, string RecommendedAction, decimal EstimatedReductionKgCO2e);
 public record ScenarioDto(Guid Id, string Name, DateTime BaselineStart, decimal Baseline, decimal Scenario, decimal Reduction, decimal? ReductionPercent, IEnumerable<RecommendationDto> Recommendations)
