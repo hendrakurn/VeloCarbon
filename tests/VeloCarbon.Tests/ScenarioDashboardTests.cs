@@ -184,4 +184,56 @@ public class ScenarioDashboardTests
         Assert.Contains("KWh", ex.Message);
         Assert.Contains("2026-09-01", ex.Message);
     }
+
+    [Fact] public async Task Cross_profile_target_is_rejected()
+    {
+        var other = (await new ProfileService(_s, _s).CreateProfileAsync("Profil Lain")).Id;
+        var otherAct = await _act.AddMeterElectricityAsync(new(other, Sep, 20));
+        await Assert.ThrowsAsync<DomainException>(() => _scn.RunAndSaveAsync(
+            new(_p, "Lintas profil", Sep, new[] { new ScenarioChangeInput(ChangeType.ReduceKWh, otherAct.Id, null, 10) })));
+    }
+
+    [Fact] public async Task Empty_scenario_changes_is_rejected()
+    {
+        await Assert.ThrowsAsync<DomainException>(() => _scn.RunAndSaveAsync(
+            new(_p, "Kosong", Sep, Array.Empty<ScenarioChangeInput>())));
+    }
+
+    [Fact] public async Task Zero_baseline_via_run_and_save_has_null_percentage()
+    {
+        var zeroMeter = await _act.AddMeterElectricityAsync(new(_p, Sep, 0));
+        var sc = await _scn.RunAndSaveAsync(
+            new(_p, "Baseline nol", Sep, new[] { new ScenarioChangeInput(ChangeType.ReduceKWh, zeroMeter.Id, null, 25) }));
+        var r = sc.Result!;
+        Assert.Equal(0m, r.BaselineKgCO2e);
+        Assert.Equal(0m, r.ReductionKgCO2e);
+        Assert.Equal(0m, r.ScenarioKgCO2e);
+        Assert.Null(r.GetReductionPercentage());
+    }
+
+    [Fact] public async Task Two_change_scenario_persists_consistent_totals_and_reloads()
+    {
+        var ride = await _act.AddDistanceAsync(new(_p, _motor, Sep, TransportMode.Motorcycle, 10, 5)); // 10 kg
+        var meter = await _act.AddMeterElectricityAsync(new(_p, Sep, 40));                            // 20 kg
+        var saved = await _scn.RunAndSaveAsync(new(_p, "Hemat ganda", Sep, new[]
+        {
+            new ScenarioChangeInput(ChangeType.ReduceDistance, ride.Id, null, 20), // -2 kg
+            new ScenarioChangeInput(ChangeType.ReduceKWh, meter.Id, null, 25),     // -5 kg
+        }));
+
+        var reloaded = (await _scn.GetByProfileAsync(_p)).Single();
+        var r = reloaded.Result!;
+        Assert.Equal(saved.Id, reloaded.Id);
+        Assert.Equal(30m, r.BaselineKgCO2e);
+        Assert.Equal(7m, r.ReductionKgCO2e);
+        Assert.Equal(23m, r.ScenarioKgCO2e);
+        Assert.Equal(r.BaselineKgCO2e - r.ReductionKgCO2e, r.ScenarioKgCO2e);
+        Assert.Equal(7m / 30m * 100m, r.GetReductionPercentage());
+        Assert.Equal(2, reloaded.Changes.Count);
+
+        var recs = r.Recommendations.OrderBy(x => x.Priority).ToList();
+        Assert.Equal(2, recs.Count);
+        Assert.Equal(5m, recs[0].EstimatedReductionKgCO2e);
+        Assert.Equal(2m, recs[1].EstimatedReductionKgCO2e);
+    }
 }
